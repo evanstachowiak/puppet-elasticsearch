@@ -40,14 +40,14 @@ class elasticsearch::package {
   }
 
   if $elasticsearch::provider == 'dpkg' {
+    Exec['download-elasticsearch-deb'] -> Exec['install_elasticsearch_deb']
     exec { 'download-elasticsearch-deb':
       command => "/usr/bin/wget -O /tmp/elasticsearch-${elasticsearch::version}.deb ${elasticsearch::dl_base_url}${elasticsearch::version}.deb",
       unless  => '/usr/bin/dpkg -s elasticsearch',
     }
-    package { $elasticsearch::params::package:
-      ensure   => $package_ensure,
-      provider => $elasticsearch::provider,
-      source   => $elasticsearch::deb_source,
+    exec { 'install_elasticsearch_deb':
+      command => "/usr/bin/dpkg -i /tmp/elasticsearch-${elasticsearch::version}.deb;/usr/bin/apt-get -fy install",
+      unless  => '/usr/bin/dpkg -s elasticsearch',
     }
   }
   else {
