@@ -150,11 +150,13 @@ class elasticsearch(
 
   if $ensure == 'present' {
     # we need the software before configuring it
-    Class['elasticsearch::package'] -> Class['elasticsearch::config']
+    Class['elasticsearch::package'] ->
+    Class['elasticsearch::config'] ->
+    Class['elasticsearch::service']
 
-    # we need the software before running a service
-    Class['elasticsearch::package'] -> Class['elasticsearch::service']
-    Class['elasticsearch::config']  -> Class['elasticsearch::service']
+    # Contain dependencies with anchor pattern
+    anchor { 'elasticsearch::begin': } -> Class['elasticsearch::package']
+    Class['elasticsearch::service'] -> anchor { 'elasticsearch::end': }
 
   } else {
 
